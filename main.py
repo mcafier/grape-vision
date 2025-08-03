@@ -16,7 +16,7 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
 # ============================================================================
 
-# We have to do this to avoid errors
+# We have to do this to avoid errors, known ultralytics issue
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 
@@ -151,7 +151,7 @@ def main():
         sys.exit(1)
     except Exception as e:
         print(f"\nAn unexpected error occurred: {e}")
-        # For debugging, you might want to print the full traceback
+        # For debugging, we might want to print the full traceback
         # import traceback
         # traceback.print_exc()
         sys.exit(1)

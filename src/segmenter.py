@@ -54,7 +54,7 @@ class Segmenter:
         Returns:
             A tuple of (contour, binary_mask) for the centermost mask, or (None, None) if not found.
         """
-        # Run YOLOv8 prediction
+        # Run YOLO prediction
         results = self.model.predict(source=INPUT, verbose=False) # verbose=False cleans up console output
         
         # Find and return the centermost mask using our helper method

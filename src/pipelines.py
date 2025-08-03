@@ -10,7 +10,6 @@ from src.segmenter import Segmenter
 from src.volume_estimator import VolumeEstimator
 from src.visualizer import Visualizer
 from src.tracker import Tracker
-# Assume utils.py has a function for saving YOLO txt files
 
 class ImageAnalysisPipeline:
     def __init__(self, config_path: str):
