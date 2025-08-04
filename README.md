@@ -7,7 +7,7 @@ A comprehensive computer vision pipeline to accurately estimate grape berry volu
 
 ---
 
-![An example of output from an image analysis](docs\images\Before_After.png) 
+![An example of output from an image analysis](docs/images/Before_After.png) 
 *A demonstration of the `analyze` command. The left panel shows the input image, and the right panel shows the final output with detected berries and pearls overlaid with their fitted ellipses and ID numbers.*
 
 ---
