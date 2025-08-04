@@ -61,17 +61,18 @@ class VolumeEstimator:
         model_robust, inliers = ransac(contour, EllipseModel, 
                                     min_samples=5,          # Need to add these params to config file
                                     residual_threshold=2,
-                                    max_trials=1000)
+                                    max_trials=100)
 
         c_x, c_y, axis_1, axis_2, angle = model_robust.params
         axis_maj = max(axis_1, axis_2)
         axis_min = min(axis_1, axis_2)
         center = (int(c_x), int(c_y))
-        axis = (int(axis_maj), int(axis_min))
+        axis = (int(axis_maj*2), int(axis_min*2))
         angle = int(np.rad2deg(angle))
 
-        ellipse = [center, axis, angle]
+        ellipse = (center, axis, angle)
         volume = self._get_volume_from_ellipse(ellipse)
+        print("One more berry done.")
         return ellipse, volume
 
     def _estimate_with_convex_hull(self, contour: np.ndarray):

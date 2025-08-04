@@ -23,23 +23,29 @@ class ImageAnalysisPipeline:
         self.detector = Detector(self.config['models']['detection_weights'])
         self.segmenter = Segmenter(self.config['models']['segmentation_weights'])
         self.volume_estimator = VolumeEstimator(self.config['analysis_settings']['volume_estimation_method'])
-        self.visualizer = Visualizer()
+
+        #Grab the visualizer config and initialize it
+        viz_config = self.config.get('visualizer_settings', {})
+        self.visualizer = Visualizer(
+        line_thickness=viz_config.get('line_thickness', 2),
+        font_scale=viz_config.get('font_scale', 0.8)
+        )
 
     # --- TASK 1: DETECTION ONLY ---
     def run_detection_only(self, input_path: str, output_dir: str = None):
         print("--- Running in Detection-Only Mode ---")
 
         run_name = "detection_output"
-        if output_dir is None:
-            output_dir=input_path
+        #if output_dir is None:             #this should be handled in my main
+        #    output_dir=input_path
         # The detector now handles all the file I/O!
         # It takes the input path directly.
         self.detector.detect(
-            image_source=input_path,
+            image_source=str(input_path),
             confidence_threshold=self.config['detection_settings']['confidence_threshold'],
             save=True,
             save_txt=True,
-            output_project_dir=output_dir,
+            output_project_dir=str(output_dir),
             output_run_name=run_name
         )
         print("Detection complete. Files saved.")
@@ -50,19 +56,21 @@ class ImageAnalysisPipeline:
         # ... logic to find all image files ...
         image_files = []
 
-        if os.path.isdir(input_path):
-        # If source is a folder, gather all the images
-            for img_file in os.listdir(input_path):
-                if img_file.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    image_files.append(os.path.join(input_path, img_file))
+        if input_path.is_dir():
+            print(f"Input is a directory. Scanning for images in: {input_path}")
+            valid_extensions = ('.png', '.jpg', '.jpeg')
+            # Scan the directory for files with valid extensions
+            all_files = os.listdir(input_path)
+            image_f = [f for f in all_files if f.lower().endswith(valid_extensions)]
+            image_files = [input_path / f for f in sorted(image_f)] # Use pathlib's / operator
 
-        # If source is a single image
-        elif input_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+            # If source is a single image
+        elif input_path.suffix.lower() in ('.png', '.jpg', '.jpeg'):
             image_files.append(input_path)
                         
         # ... the analysis begins here ...
         for img_path in image_files:
-            original_img = cv2.imread(img_path)
+            original_img = cv2.imread(str(img_path)) #We have to convert the Path object to a string
             detections = self.detector.detect(
                 image_source=original_img,
                 confidence_threshold=self.config['detection_settings']['confidence_threshold']
@@ -95,7 +103,6 @@ class ImageAnalysisPipeline:
                     continue
                 
                 # Get volume. We can specify method here.
-                method = self.config['analysis_settings']['volume_estimation_method']
                 ellipse, volume = self.volume_estimator.estimate(contour)
                 if ellipse is None:
                     continue
@@ -115,17 +122,17 @@ class ImageAnalysisPipeline:
                 berry_counter += 1
             
             # Now save everything for this image
-            img_basename = os.path.splitext(os.path.basename(img_path))[0]
-            img_output_dir = os.path.join(output_dir, img_basename)
+            img_basename = img_path.stem #same as "os.path.splitext(os.path.basename(img_path))[0]" but with pathlib method
+            img_output_dir = output_dir / img_basename
             os.makedirs(img_output_dir, exist_ok=True)
             
             # Save CSV file
             df = pd.DataFrame(all_results)
-            df.to_csv(os.path.join(img_output_dir, "analysis_results.csv"), index=False)
+            df.to_csv(img_output_dir / "analysis_results.csv", index=False)
 
             # Save visualization with ellipses and IDs
             viz_img = self.visualizer.draw_analysis_results(original_img, all_results)
-            cv2.imwrite(os.path.join(img_output_dir, "analysis_viz.jpg"), viz_img)
+            cv2.imwrite(str(img_output_dir / "analysis_viz.jpg"), viz_img)
 
 
 class TimeSeriesPipeline:
@@ -140,7 +147,13 @@ class TimeSeriesPipeline:
         self.tracker = Tracker(self.config['models']['detection_weights'], self.config['tracking_settings']['tracker_config_file'])
         self.segmenter = Segmenter(self.config['models']['segmentation_weights'])
         self.volume_estimator = VolumeEstimator(self.config['analysis_settings']['volume_estimation_method'])
-        self.visualizer = Visualizer()
+
+        #Grab the visualizer config and initialize it
+        viz_config = self.config.get('visualizer_settings', {})
+        self.visualizer = Visualizer(
+        line_thickness=viz_config.get('line_thickness', 2),
+        font_scale=viz_config.get('font_scale', 0.8)
+        )
         
     # --- PRIVATE HELPER: Creates crop folders from tracking data ---
     def _create_crop_folders(self, input_dir: str, output_dir: str, tracking_data: dict):
@@ -155,8 +168,8 @@ class TimeSeriesPipeline:
             os.makedirs(berry_dir, exist_ok=True)
 
             for det in detections:
-                original_img_path = os.path.join(input_dir, det['frame_name'])
-                frame = cv2.imread(original_img_path)
+                original_img_path = input_dir / det['frame_name']
+                frame = cv2.imread(str(original_img_path))
                 
                 x, y, w, h = det['box_xywh']
                 # Increasing height and width of the box slightly (10%)
@@ -173,7 +186,7 @@ class TimeSeriesPipeline:
                 crop_img = frame[start_y:end_y, start_x:end_x]
                 
                 crop_filename = f"{class_name}_{track_id}_{det['frame_name']}"
-                cv2.imwrite(os.path.join(berry_dir, crop_filename), crop_img)
+                cv2.imwrite(str(berry_dir / crop_filename), crop_img)
 
     # --- Use Case 1: TRACKING ONLY ---
     def run_tracking_only(self, input_dir: str, output_dir: str):
@@ -181,21 +194,21 @@ class TimeSeriesPipeline:
         print("--- Running in Tracking-Only Mode ---")
         
         tracking_data = self.tracker.track_sequence(
-            image_folder_path=input_dir,
+            image_folder_path=str(input_dir),
            # tracker_config_file=self.config['tracking_settings']['tracker_config_file'],
             save_txt=True, # Always save labels for this mode
-            output_dir=output_dir,
+            output_dir=str(output_dir),
             run_name="yolo_track_output"
         )
         
         # Save the structured tracking data to a JSON file
-        summary_path = os.path.join(output_dir, "tracking_summary.json")
+        summary_path = output_dir / "tracking_summary.json"
         with open(summary_path, 'w') as f:
             json.dump(tracking_data, f, indent=4)
         print(f"Tracking summary saved to {summary_path}")
 
         # Optionally create crop folders based on config
-        if self.config['analysis_settings']['video']['create_crop_folders']:
+        if self.config['analysis_settings']['time_series']['create_crop_folders']:
             self._create_crop_folders(input_dir, output_dir, tracking_data)
 
     # --- Use Case 2: TRACKING + ANALYSIS ---
@@ -204,15 +217,15 @@ class TimeSeriesPipeline:
         print("--- Running in Full Time-Series Analysis Mode ---")
         
         tracking_data = self.tracker.track_sequence(
-            image_folder_path=input_dir,
+            image_folder_path=str(input_dir),
             #tracker_config_file=self.config['tracking_settings']['tracker_config_file'],
             save_txt=False, # Don't save labels for this mode
-            output_dir=output_dir,
+            output_dir=str(output_dir),
             run_name="yolo_track_output"
         )
 
         # Save tracking summary JSON
-        summary_path = os.path.join(output_dir, "tracking_summary.json")
+        summary_path = output_dir / "tracking_summary.json"
         with open(summary_path, 'w') as f:
             json.dump(tracking_data, f, indent=4)
         print(f"Tracking summary saved to {summary_path}")
@@ -221,15 +234,15 @@ class TimeSeriesPipeline:
         
         # This is the core analysis loop
         for track_id, detections in tracking_data.items():
-            viz_crop_dir = os.path.join(output_dir, "visualized_crops", f"{detections[0]['class_name']}_{track_id}")
+            viz_crop_dir = output_dir / "visualized_crops" / f"{detections[0]['class_name']}_{track_id}"
             os.makedirs(viz_crop_dir, exist_ok=True)
 
             single_berry_results = []
                     
             for det in detections:
                 # ... (load original image, crop it) ...
-                original_img_path = os.path.join(input_dir, det['frame_name'])
-                frame = cv2.imread(original_img_path)
+                original_img_path = input_dir / det['frame_name']
+                frame = cv2.imread(str(original_img_path))
                 
                 x, y, w, h = det['box_xywh']
                 # Increasing height and width of the box slightly (10%)
@@ -251,8 +264,7 @@ class TimeSeriesPipeline:
                 if contour is None:
                     continue
                 
-                # Get volume. We can specify method here.
-                method = self.config['analysis_settings']['volume_estimation_method']
+                # Get volume.
                 ellipse, volume = self.volume_estimator.estimate(contour)
                 if ellipse is None:
                     continue
@@ -275,17 +287,17 @@ class TimeSeriesPipeline:
                 # ... (use visualizer to draw ellipse on crop) ...
                 viz_img = self.visualizer.draw_ellipse(crop_img, ellipse)
                 # ... (save visualized crop to viz_crop_dir) ...
-                cv2.imwrite(os.path.join(viz_crop_dir, det['frame_name']), viz_img)
+                cv2.imwrite(str(viz_crop_dir / det['frame_name']), viz_img)
             
             # Output single berry CSVs
             if single_berry_results: # Only save if we have data
                 df_berry = pd.DataFrame(single_berry_results)
-                csv_path_berry = os.path.join(viz_crop_dir, "volume_over_time.csv")
+                csv_path_berry = viz_crop_dir / "volume_over_time.csv"
                 df_berry.to_csv(csv_path_berry, index=False)
 
         # Save the final volume results to a single CSV
         df = pd.DataFrame(all_volume_results)
-        df.to_csv(os.path.join(output_dir, "volume_analysis_results.csv"), index=False)
+        df.to_csv(output_dir / "volume_analysis_results.csv", index=False)
         print("Full analysis complete. Results saved.")
         print("A CSV for each berry has been saved in its respective visualized_crops folder")
 
@@ -306,21 +318,21 @@ class TimeSeriesPipeline:
             print("Single track folder detected. Processing images directly.")
             folders_to_process = [input_dir]
             # Create a more descriptive output directory for the single case
-            input_folder_name = os.path.basename(os.path.normpath(input_dir))
-            output_dir = os.path.join(output_dir, f"{input_folder_name}_analysis")
+            input_folder_name = input_dir.name
+            output_dir = output_dir / f"{input_folder_name}_analysis"
             os.makedirs(output_dir, exist_ok=True)
         else:
             # Otherwise, look for subdirectories (multi-track case)
             print("Multiple track folders detected. Looking for subdirectories.")
-            folders_to_process = [d for d in glob(os.path.join(input_dir, '*')) if os.path.isdir(d)]
+            folders_to_process = [p for p in input_dir.glob('*') if p.is_dir()]
 
         if not folders_to_process:
             print("Warning: No valid crop folders or images found in the input directory.")
             return # Exit early
 
         for folder_path in folders_to_process:
-            folder_name = os.path.basename(os.path.normpath(folder_path))
-            viz_crop_dir = os.path.join(output_dir, "visualized_crops", folder_name)
+            folder_name = folder_path.name
+            viz_crop_dir = output_dir / "visualized_crops" / folder_name
             os.makedirs(viz_crop_dir, exist_ok=True)
             
             image_files = sorted([f for f in os.listdir(folder_path) if f.lower().endswith(valid_extensions)])
@@ -331,7 +343,7 @@ class TimeSeriesPipeline:
             
             for img_path in image_paths:
                 img_name = os.path.basename(img_path)
-                crop_img = cv2.imread(img_path)
+                crop_img = cv2.imread(str(img_path))
 
                 # ... (run segmenter, volume_estimator on crop_img) ...
                 # Run segmentation and volume estimation
@@ -360,16 +372,16 @@ class TimeSeriesPipeline:
 
                 # ... (save visualized crop to viz_crop_dir) ...
                 viz_img = self.visualizer.draw_ellipse(crop_img, ellipse)
-                cv2.imwrite(os.path.join(viz_crop_dir, img_name), viz_img)
+                cv2.imwrite(str(viz_crop_dir / img_name), viz_img)
 
               # Output single berry CSVs
             if single_berry_results: # Only save if we have data
                 df_berry = pd.DataFrame(single_berry_results)
-                csv_path_berry = os.path.join(viz_crop_dir, "volume_over_time.csv")
+                csv_path_berry = viz_crop_dir / "volume_over_time.csv"
                 df_berry.to_csv(csv_path_berry, index=False)
         
         # Save the final volume results to a single CSV
         df = pd.DataFrame(all_volume_results)
-        df.to_csv(os.path.join(output_dir, "volume_analysis_results.csv"), index=False)
+        df.to_csv(output_dir / "volume_analysis_results.csv", index=False)
         print("Full analysis complete. Results saved.")
         print("A CSV for each berry has been saved in its respective visualized_crops folder")

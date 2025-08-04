@@ -18,8 +18,8 @@ models:
   # Model used for initial detection of objects.
   detection_weights: "models/yolov11l_detect.pt"
   
-  # Model used for precise segmentation of objects (can be same as detection).
-  segmentation_weights: "models/YOLOV8L_seg_03-08-23.pt"
+  # Model used for precise segmentation of objects
+  segmentation_weights: "models/yolov11l_seg.pt"     #models/YOLOV8L_03-08-23.pt
 
 # --- Component Settings ---
 # Fine-tune the behavior of each component in the pipeline.
@@ -35,7 +35,6 @@ segmentation_settings:
 tracking_settings:
   # Path to the specialized tracker configuration file.
   # This file controls the low-level tracking algorithm (e.g., BoT-SORT, ByteTrack).
-  # You can find default versions in the ultralytics library or create your own.
   tracker_config_file: "configs/tracker.yaml"
 
 # --- Analysis & Output Settings ---
@@ -47,7 +46,12 @@ analysis_settings:
   volume_estimation_method: "convex_hull"
 
   # Settings specific to time-series (video/image sequence) analysis.
-  video:
+  time_series:
     # If true, the 'track' command will create folders for each tracked
     # berry containing its cropped images over time.
     create_crop_folders: true
+
+visualizer_settings:
+  #Controls the the thickness of the ellipses displayed, and the font size of the IDs 
+  line_thickness: 3
+  font_scale: 1

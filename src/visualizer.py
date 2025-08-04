@@ -46,7 +46,7 @@ class Visualizer:
         """
         viz_img = image.copy()
         color = (255, 0, 0) # Blue
-        width = 2 # The width of the ellipse
+        width = self.line_thickness # The width of the ellipse
 
         cv2.ellipse(viz_img, parameters, color, width)
         return viz_img
