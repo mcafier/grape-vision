@@ -58,8 +58,8 @@ This is the most reliable way to replicate the development environment.
 
 ```bash
 # Clone the repository
-git clone https://github.com/MotsPassant/Grape-Berry-Phenotyping-with-Computer-Vision.git
-cd Grape-Berry-Phenotyping-with-Computer-Vision
+git clone https://github.com/mcafier/grape-vision.git
+cd grape-vision
 
 # Create the environment from the file
 conda env create -f environment.yml
@@ -76,8 +76,8 @@ This method uses the standard pip and venv tools.
 
 ```bash
 # Clone the repository and create a virtual environment
-git clone https://github.com/MotsPassant/Grape-Berry-Phenotyping-with-Computer-Vision.git
-cd Grape-Berry-Phenotyping-with-Computer-Vision
+git clone https://github.com/mcafier/grape-vision.git
+cd grape-vision
 python -m venv venv
 source venv/bin/activate  # on macOS/Linux
 # .\venv\Scripts\activate  # on Windows
