@@ -7,8 +7,6 @@
 # --- Model Metadata ---
 # This section defines data about the models themselves.
 model_data:
-  # IMPORTANT: List the class names in the EXACT order your model was trained on.
-  # Class ID 0 will be the first name, ID 1 the second, and so on.
   class_names: ['Berry', 'Pearl']
 
 # --- Model Paths ---

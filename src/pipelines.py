@@ -160,7 +160,6 @@ class TimeSeriesPipeline:
         print("Creating individual berry crop folders...")
         for track_id, detections in tracking_data.items():
             # Assume first detection gives the class name for the whole track
-            #class_id = detections[0]['class_id']
             class_name = detections[0]['class_name']
             
             berry_folder_name = f"{class_name}_{track_id}"
@@ -312,7 +311,7 @@ class TimeSeriesPipeline:
         # Define valid, case-insensitive extensions once
         valid_extensions = ('.jpg', '.jpeg', '.png')
 
-        # --- NEW LOGIC: Intelligently determine which folders to process ---
+        # --- Intelligently determine which folders to process ---
         # Check if the input_dir itself contains images (single track case)
         if any(f.lower().endswith(valid_extensions) for f in os.listdir(input_dir)):
             print("Single track folder detected. Processing images directly.")
