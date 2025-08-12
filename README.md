@@ -85,7 +85,7 @@ source venv/bin/activate  # on macOS/Linux
 # Install the required packages
 pip install -r requirements.txt
 ```
-
+</details>
 
 ### **Usage**
 
