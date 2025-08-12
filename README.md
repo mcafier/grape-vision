@@ -141,6 +141,7 @@ All pipeline parameters can be adjusted in the `config.yaml` file without changi
 # Master Configuration for the Grape Vision Pipeline
 
 # Defines class names in the order the model was trained
+# (do not modify)
 model_data:
   class_names: ['Berry', 'Pearl']
 
