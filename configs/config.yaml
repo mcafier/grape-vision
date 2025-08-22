@@ -7,7 +7,7 @@
 # --- Model Metadata ---
 # This section defines data about the models themselves.
 model_data:
-  class_names: ['Berry', 'Pearl']
+  class_names: ['Berry', 'Pearl'] #Do not modify this
 
 # --- Model Paths ---
 # Paths to the trained model weight files (.pt).
@@ -42,6 +42,11 @@ analysis_settings:
   # The method used to calculate volume from a mask.
   # Available options: 'ransac', 'convex_hull'
   volume_estimation_method: "convex_hull"
+
+  ransac:
+    min_samples: 5 #Use a minimum of 5, as ellipses have 5 parameters
+    residual_threshold: 2.0  # Use floats for thresholds
+    max_trials: 100
 
   # Settings specific to time-series (video/image sequence) analysis.
   time_series:

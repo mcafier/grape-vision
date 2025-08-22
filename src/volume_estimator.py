@@ -10,15 +10,22 @@ from skimage.measure import EllipseModel, ransac
 class VolumeEstimator:
     """Calculates berry volume from a mask contour using different methods."""
 
-    def __init__(self, method: str = 'convex_hull'):
+    def __init__(self, analysis_config: dict):
         """
         Initializes the VolumeEstimator.
         Args:
-            method (str): The method to use, e.g., 'ransac' or 'convex_hull'.
+            analysis_config (dict): A dictionary of analysis settings,
+                                    typically from the main config file.
         """
-        if method not in ['ransac', 'convex_hull']:
-            raise ValueError(f"Unknown estimation method: {method}")
-        self.method = method
+        self.method = analysis_config.get('volume_estimation_method', 'convex_hull')
+        
+        # If using RANSAC, load its specific parameters from the config
+        if self.method == 'ransac':
+            ransac_config = analysis_config.get('ransac', {})
+            # Use .get() for each parameter to provide safe defaults
+            self.ransac_min_samples = ransac_config.get('min_samples', 5)
+            self.ransac_residual_threshold = ransac_config.get('residual_threshold', 2.0)
+            self.ransac_max_trials = ransac_config.get('max_trials', 100)
         print(f"VolumeEstimator initialized with method: {self.method}")
     
     def _get_volume_from_ellipse(self, ellipse):
@@ -57,11 +64,25 @@ class VolumeEstimator:
 
 
     def _estimate_with_ransac(self, contour: np.ndarray):
-        model = EllipseModel()
-        model_robust, inliers = ransac(contour, EllipseModel, 
-                                    min_samples=5,          # Need to add these params to config file
-                                    residual_threshold=2,
-                                    max_trials=100)
+
+        # Guard clause to prevent errors on small contours
+        if contour.shape[0] < self.ransac_min_samples:
+            return None, None
+        
+        try:
+            # The EllipseModel is created here, not outside the function.
+            model_robust, inliers = ransac(
+                contour, 
+                EllipseModel, 
+                min_samples=self.ransac_min_samples,
+                residual_threshold=self.ransac_residual_threshold,
+                max_trials=self.ransac_max_trials
+            )
+        except Exception:
+            return None, None # Catch any unexpected error from ransac
+        
+        if model_robust is None:
+            return None, None
 
         c_x, c_y, axis_1, axis_2, angle = model_robust.params
         axis_maj = max(axis_1, axis_2)
@@ -72,7 +93,7 @@ class VolumeEstimator:
 
         ellipse = (center, axis, angle)
         volume = self._get_volume_from_ellipse(ellipse)
-        print("One more berry done.")
+        #print("One more berry done.")
         return ellipse, volume
 
     def _estimate_with_convex_hull(self, contour: np.ndarray):

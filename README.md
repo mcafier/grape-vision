@@ -138,31 +138,66 @@ The entire pipeline is controlled via `main.py` from your terminal. The `--outpu
 All pipeline parameters can be adjusted in the `config.yaml` file without changing the code. This includes model paths, confidence thresholds, and analysis methods.
 
 ```yaml
+# -----------------------------------------------------------------------------
 # Master Configuration for the Grape Vision Pipeline
+#
+# This file controls all model paths, thresholds, and operational parameters.
+# -----------------------------------------------------------------------------
 
-# Defines class names in the order the model was trained
-# (do not modify)
+# --- Model Metadata ---
+# This section defines data about the models themselves.
 model_data:
-  class_names: ['Berry', 'Pearl']
+  class_names: ['Berry', 'Pearl'] #do not modify this
 
-# Paths to the trained model weight files
+# --- Model Paths ---
+# Paths to the trained model weight files (.pt).
+# These can be absolute paths or relative to the project's root directory.
 models:
+  # Model used for initial detection of objects.
   detection_weights: "models/yolov11l_detect.pt"
-  segmentation_weights: "models/yolov11l_seg.pt"
+  
+  # Model used for precise segmentation of objects
+  segmentation_weights: "models/yolov11l_seg.pt"     #models/YOLOV8L_03-08-23.pt
 
-# Component settings
+# --- Component Settings ---
+# Fine-tune the behavior of each component in the pipeline.
+
 detection_settings:
+  # Detections with a confidence score below this value will be ignored.
   confidence_threshold: 0.5
-segmentation_settings:
-  confidence_threshold: 0.4
-tracking_settings:
-  tracker_config_file: "configs/botsort.yaml"
 
-# Analysis & output settings
+segmentation_settings:
+  # Confidence threshold for the segmentation model.
+  confidence_threshold: 0.4
+
+tracking_settings:
+  # Path to the specialized tracker configuration file.
+  # This file controls the low-level tracking algorithm (e.g., BoT-SORT, ByteTrack).
+  tracker_config_file: "configs/tracker.yaml"
+
+# --- Analysis & Output Settings ---
+# Control the analysis methods and what gets saved.
+
 analysis_settings:
-  volume_estimation_method: "convex_hull"  # 'ransac' or 'convex_hull'
+  # The method used to calculate volume from a mask.
+  # Available options: 'ransac', 'convex_hull'
+  volume_estimation_method: "convex_hull"
+
+  ransac:
+    min_samples: 5 #Use a minimum of 5, as ellipses have 5 parameters
+    residual_threshold: 2.0  # Use floats for thresholds
+    max_trials: 100
+
+  # Settings specific to time-series (video/image sequence) analysis.
   time_series:
+    # If true, the 'track' command will create folders for each tracked
+    # berry containing its cropped images over time.
     create_crop_folders: true
+
+visualizer_settings:
+  #Controls the the thickness of the ellipses displayed, and the font size of the IDs 
+  line_thickness: 3
+  font_scale: 1
 ```
 
 ---

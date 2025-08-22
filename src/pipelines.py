@@ -25,7 +25,7 @@ class ImageAnalysisPipeline:
         # Initialize all components that might be needed
         self.detector = Detector(self.config['models']['detection_weights'])
         self.segmenter = Segmenter(self.config['models']['segmentation_weights'])
-        self.volume_estimator = VolumeEstimator(self.config['analysis_settings']['volume_estimation_method'])
+        self.volume_estimator = VolumeEstimator(self.config['analysis_settings'])
 
         #Grab the visualizer config and initialize it
         viz_config = self.config.get('visualizer_settings', {})
@@ -153,7 +153,7 @@ class TimeSeriesPipeline:
         # Initialize all components
         self.tracker = Tracker(self.config['models']['detection_weights'], self.config['tracking_settings']['tracker_config_file'])
         self.segmenter = Segmenter(self.config['models']['segmentation_weights'])
-        self.volume_estimator = VolumeEstimator(self.config['analysis_settings']['volume_estimation_method'])
+        self.volume_estimator = VolumeEstimator(self.config['analysis_settings'])
 
         #Grab the visualizer config and initialize it
         viz_config = self.config.get('visualizer_settings', {})

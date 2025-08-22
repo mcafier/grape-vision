@@ -6,14 +6,14 @@ import numpy as np
 
 
 class Segmenter:
-    """A class to handle berry segmentation using a YOLOv8 model."""
+    """A class to handle berry segmentation using a YOLO model."""
     
     def __init__(self, model_weights_path: str):
         """
         Initializes the Segmenter.
         
         Args:
-            model_weights_path (str): Path to the trained YOLOv8 segmentation model weights.
+            model_weights_path (str): Path to the trained YOLO segmentation model weights.
         """
         print(f"Initializing Segmenter with model: {model_weights_path}")
         self.model = YOLO(model_weights_path)
