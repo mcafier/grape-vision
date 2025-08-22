@@ -105,7 +105,7 @@ The entire pipeline is controlled via `main.py` from your terminal. The `--outpu
 *   **Use Case:** You want to calculate the volume of all berries in one or more images.
 *   **Command:**
     ```bash
-    python main.py analyze --input path/to/your/images --output path/to/your/output
+    python main.py analyze --input sample_data/single_image/sample_bunch_image.jpg
     ```
 *   **Output:** A detailed `.csv` file with volume and ellipse data, plus visualized images with numbered ellipses.
 
@@ -113,7 +113,7 @@ The entire pipeline is controlled via `main.py` from your terminal. The `--outpu
 *   **Use Case:** You have a time-series of images and want to track each berry, saving the raw tracking data and cropped images of each berry's journey.
 *   **Command:**
     ```bash
-    python main.py track --input path/to/your/image_sequence --output path/to/your/output
+    python main.py track --input sample_data/image_sequence
     ```
 *   **Output:** A `tracking_summary.json` file, YOLO label files, and folders of cropped images for each tracked berry.
 
@@ -121,15 +121,15 @@ The entire pipeline is controlled via `main.py` from your terminal. The `--outpu
 *   **Use Case:** You want to track berries AND calculate their volume in every frame to measure growth.
 *   **Command:**
     ```bash
-    python main.py track-analyze --input path/to/your/image_sequence --output path/to/your/output
+    python main.py track-analyze --input sample_data/image_sequence
     ```
 *   **Output:** A master CSV with all volume data over time, plus folders for each berry containing visualized crops and an individual volume-over-time CSV.
 
 **5. Analysis on Pre-Tracked Crops**
-*   **Use Case:** You have already run tracking and perhaps manually corrected the crop folders. Now you only want to run volume estimation on them.
+*   **Use Case:** You have already run tracking and perhaps manually corrected the crop folders. Now you only want to run volume estimation on them. You can use this command on a folder of crops, or on a folder of folders of crops.
 *   **Command:**
     ```bash
-    python main.py analyze-crops --input path/to/your/tracked_crops_folder --output path/to/your/output
+    python main.py analyze-crops --input sample_data/pre_tracked_crops/Berry_4
     ```
 *   **Output:** The same output as the `track-analyze` command, but it skips the tracking step.
 

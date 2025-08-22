@@ -17,7 +17,7 @@ models:
   detection_weights: "models/yolov11l_detect.pt"
   
   # Model used for precise segmentation of objects
-  segmentation_weights: "models/yolov11l_seg.pt"     #models/YOLOV8L_03-08-23.pt
+  segmentation_weights: "models/yolov11l_seg.pt"   
 
 # --- Component Settings ---
 # Fine-tune the behavior of each component in the pipeline.
