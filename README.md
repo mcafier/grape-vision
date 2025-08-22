@@ -87,6 +87,8 @@ pip install -r requirements.txt
 ```
 </details>
 
+---
+
 ### **Usage**
 
 The entire pipeline is controlled via `main.py` from your terminal. The `--output` argument is optional and will default to a "Results" folder next to your input if not provided.
@@ -199,5 +201,7 @@ visualizer_settings:
   line_thickness: 3
   font_scale: 1
 ```
+
+You can also adjust the tracker parameters in the `tracker.yaml` file to improve robustness with your data. Please refer to the ultralytics documentation for more information.
 
 ---
