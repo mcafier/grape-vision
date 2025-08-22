@@ -4,6 +4,9 @@ import pandas as pd
 import yaml
 import json
 from glob import glob
+from pathlib import Path
+from tqdm import tqdm
+
 
 from src.detector import Detector
 from src.segmenter import Segmenter
@@ -53,6 +56,10 @@ class ImageAnalysisPipeline:
     # --- TASK 2: FULL ANALYSIS ---
     def run_full_analysis(self, input_path: str, output_dir: str):
         print("--- Running in Full-Analysis Mode ---")
+
+        if self.volume_estimator.method == 'ransac':
+            print("Info: RANSAC method is selected. Analysis may take a while for each image.")
+
         # ... logic to find all image files ...
         image_files = []
 
@@ -69,7 +76,7 @@ class ImageAnalysisPipeline:
             image_files.append(input_path)
                         
         # ... the analysis begins here ...
-        for img_path in image_files:
+        for img_path in tqdm(image_files, desc="Analyzing images"):
             original_img = cv2.imread(str(img_path)) #We have to convert the Path object to a string
             detections = self.detector.detect(
                 image_source=original_img,
@@ -156,19 +163,29 @@ class TimeSeriesPipeline:
         )
         
     # --- PRIVATE HELPER: Creates crop folders from tracking data ---
-    def _create_crop_folders(self, input_dir: str, output_dir: str, tracking_data: dict):
+    def _create_crop_folders(self, input_dir: Path, output_dir: Path, tracking_data: dict):
         print("Creating individual berry crop folders...")
+
+        # Create the main parent directory for all crops
+        tracked_crops_parent_dir = output_dir / "tracked_crops"
+        tracked_crops_parent_dir.mkdir(parents=True, exist_ok=True)
+
         for track_id, detections in tracking_data.items():
             # Assume first detection gives the class name for the whole track
             class_name = detections[0]['class_name']
             
             berry_folder_name = f"{class_name}_{track_id}"
-            berry_dir = os.path.join(output_dir, "tracked_crops", berry_folder_name)
-            os.makedirs(berry_dir, exist_ok=True)
+            berry_dir = tracked_crops_parent_dir / berry_folder_name
+            berry_dir.mkdir(exist_ok=True) # The pathlib way to create a directory
 
             for det in detections:
                 original_img_path = input_dir / det['frame_name']
                 frame = cv2.imread(str(original_img_path))
+
+                # Defensive check in case an image is missing from the sequence
+                if frame is None:
+                    print(f"Warning: Could not read image file {original_img_path}. Skipping crop.")
+                    continue
                 
                 x, y, w, h = det['box_xywh']
                 # Increasing height and width of the box slightly (10%)
@@ -185,7 +202,8 @@ class TimeSeriesPipeline:
                 crop_img = frame[start_y:end_y, start_x:end_x]
                 
                 crop_filename = f"{class_name}_{track_id}_{det['frame_name']}"
-                cv2.imwrite(str(berry_dir / crop_filename), crop_img)
+                output_crop_path = berry_dir / crop_filename
+                cv2.imwrite(str(output_crop_path), crop_img)
 
     # --- Use Case 1: TRACKING ONLY ---
     def run_tracking_only(self, input_dir: str, output_dir: str):
@@ -214,6 +232,9 @@ class TimeSeriesPipeline:
     def run_full_analysis(self, input_dir: str, output_dir: str):
         os.makedirs(output_dir, exist_ok=True)
         print("--- Running in Full Time-Series Analysis Mode ---")
+
+        if self.volume_estimator.method == 'ransac':
+            print("Info: RANSAC method is selected. Analysis may take a while for each image.")
         
         tracking_data = self.tracker.track_sequence(
             image_folder_path=str(input_dir),
@@ -232,7 +253,7 @@ class TimeSeriesPipeline:
         all_volume_results = []
         
         # This is the core analysis loop
-        for track_id, detections in tracking_data.items():
+        for track_id, detections in tqdm(tracking_data.items(), desc="Analyzing tracked berries"):
             viz_crop_dir = output_dir / "visualized_crops" / f"{detections[0]['class_name']}_{track_id}"
             os.makedirs(viz_crop_dir, exist_ok=True)
 
@@ -304,6 +325,9 @@ class TimeSeriesPipeline:
     def run_analysis_on_crops(self, input_dir: str, output_dir: str):
         os.makedirs(output_dir, exist_ok=True)
         print("--- Running Analysis on Pre-Cropped Folders ---")
+
+        if self.volume_estimator.method == 'ransac':
+            print("Info: RANSAC method is selected. Analysis may take a while for each image.")
         
         all_volume_results = []
         folders_to_process = []
@@ -329,7 +353,7 @@ class TimeSeriesPipeline:
             print("Warning: No valid crop folders or images found in the input directory.")
             return # Exit early
 
-        for folder_path in folders_to_process:
+        for folder_path in tqdm(folders_to_process, desc="Analyzing tracked berries"):
             folder_name = folder_path.name
             viz_crop_dir = output_dir / "visualized_crops" / folder_name
             os.makedirs(viz_crop_dir, exist_ok=True)

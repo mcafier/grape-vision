@@ -57,7 +57,7 @@ def main():
     )
     parser_detect.add_argument("-i", "--input", required=True, help="Path to the input image or folder.")
     parser_detect.add_argument("-o", "--output", default=None, help="Path to the output directory. Defaults to a 'Results' folder next to the input.")
-    parser_detect.add_argument("-c", "--config", default="configs\config.yaml", help="Path to the main configuration file.")
+    parser_detect.add_argument("-c", "--config", default="configs/config.yaml", help="Path to the main configuration file.")
 
     # --- Sub-parser for the 'analyze' command ---
     parser_analyze = subparsers.add_parser(
@@ -66,7 +66,7 @@ def main():
     )
     parser_analyze.add_argument("-i", "--input", required=True, help="Path to the input image or folder.")
     parser_analyze.add_argument("-o", "--output", default=None, help="Path to the output directory. Defaults to a 'Results' folder next to the input.")
-    parser_analyze.add_argument("-c", "--config", default="configs\config.yaml", help="Path to the main configuration file.")
+    parser_analyze.add_argument("-c", "--config", default="configs/config.yaml", help="Path to the main configuration file.")
 
     # --- Sub-parser for the 'track' command ---
     parser_track = subparsers.add_parser(
@@ -75,7 +75,7 @@ def main():
     )
     parser_track.add_argument("-i", "--input", required=True, help="Path to the input folder of sequential images.")
     parser_track.add_argument("-o", "--output", default=None, help="Path to the output directory. Defaults to a 'Results' folder next to the input.")
-    parser_track.add_argument("-c", "--config", default="configs\config.yaml", help="Path to the main configuration file.")
+    parser_track.add_argument("-c", "--config", default="configs/config.yaml", help="Path to the main configuration file.")
 
     # --- Sub-parser for the 'track-analyze' command ---
     parser_track_analyze = subparsers.add_parser(
@@ -84,7 +84,7 @@ def main():
     )
     parser_track_analyze.add_argument("-i", "--input", required=True, help="Path to the input folder of sequential images.")
     parser_track_analyze.add_argument("-o", "--output", default=None, help="Path to the output directory. Defaults to a 'Results' folder next to the input.")
-    parser_track_analyze.add_argument("-c", "--config", default="configs\config.yaml", help="Path to the main configuration file.")
+    parser_track_analyze.add_argument("-c", "--config", default="configs/config.yaml", help="Path to the main configuration file.")
     
     # --- Sub-parser for the 'analyze-crops' command ---
     parser_analyze_crops = subparsers.add_parser(
@@ -93,7 +93,7 @@ def main():
     )
     parser_analyze_crops.add_argument("-i", "--input", required=True, help="Path to the root folder containing tracked crop folders (e.g., 'Berry_1', 'Berry_2').")
     parser_analyze_crops.add_argument("-o", "--output", default=None, help="Path to the output directory. Defaults to a 'Results' folder next to the input.")
-    parser_analyze_crops.add_argument("-c", "--config", default="configs\config.yaml", help="Path to the main configuration file.")
+    parser_analyze_crops.add_argument("-c", "--config", default="configs/config.yaml", help="Path to the main configuration file.")
 
     args = parser.parse_args()
 

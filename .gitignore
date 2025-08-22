@@ -12,7 +12,13 @@ pip-delete-this-directory.txt
 .coverage
 .cache
 .pytest_cache
-debug_runner.py 
+debug_runner.py
+test_all.bat
+test_analyze.bat
+test_detect.bat
+test_track.bat
+test_track_analyze.bat
+test_analyze_crops.bat
 
 # IDE specific
 .vscode
