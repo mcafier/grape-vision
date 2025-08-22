@@ -15,5 +15,6 @@ dependencies:
   - opencv
   - scikit-image
   - lap
+  - pip
   - pip:
     - ultralytics
